@@ -264,6 +264,9 @@ body.clean .gact{position:static;background:transparent;padding:0;margin:0}
 body.clean #gall{display:none}
 body.clean #mk{flex:none;font-size:max(2.6vmin,18px);padding:1.2vmin 3vmin}
 #sItemName{width:16ch;background:transparent;border:2px solid var(--bar);border-radius:1.2vmin;padding:.6vmin;font-size:max(1.8vmin,13px)}
+#sLay{max-width:17ch;text-overflow:ellipsis}
+#sShare{max-width:13ch;text-overflow:ellipsis}
+.band{position:absolute;border:2px dashed var(--accent);background:color-mix(in srgb,var(--accent) 15%,transparent);pointer-events:none;z-index:6}
 </style>
 </head>
 <body>
@@ -320,13 +323,14 @@ body.clean #mk{flex:none;font-size:max(2.6vmin,18px);padding:1.2vmin 3vmin}
   </div>
   <div class="tb m-arr">
     <button id="sLock">Lock layout</button><span class="hint lock-only">Room is locked. Unlock it to move or add items.</span>
-    <input id="sLname" type="text" aria-label="Layout name" placeholder="Layout name"><button id="sNew">New blank</button><button id="sDup" title="Copy the desks and room items, with seats left empty">Duplicate</button><button id="sLdel">Delete</button>
+    <input id="sLname" type="text" aria-label="Layout name" placeholder="Layout name"><button id="sNew">New blank</button><button id="sDup" title="Copy the desks and room items, with seats left empty">Duplicate</button><button id="sLdel">Delete</button><select id="sShare" aria-label="Share layouts between classes" title="Copy a room layout to another class, or use one from another class"></select>
     <span class="edit-only">
       <span class="hint">Rows</span><input id="sRows" aria-label="Rows" type="number" min="1" max="12" value="4"><span class="hint">Columns</span><input id="sCols" aria-label="Columns" type="number" min="1" max="12" value="6"><button id="sGrid">Create desk grid</button>
       <select id="sAdd" aria-label="Add item"><option value="">+ Add item…</option><option value="desk">Desk</option><option value="table">Table</option><option value="door">Door</option><option value="label">Text label</option><option value="board">Whiteboard</option></select>
       <input id="sItemName" type="text" aria-label="Rename the selected item" placeholder="Select an item to rename" disabled>
-      <button id="sBig">Bigger</button><button id="sSmall">Smaller</button><button id="sDel">Delete</button>
-      <span class="hint">Drag to move. Select an item to rename or resize it.</span>
+      <select id="sSelect" aria-label="Select items"><option value="">Select…</option><option value="all">All items</option><option value="desks">All desks</option><option value="none">Clear selection</option></select>
+      <button id="sBig" title="Make the selected items bigger">Bigger</button><button id="sSmall">Smaller</button><button id="sSpread" title="Move the selected items further apart">Spread</button><button id="sTight" title="Move the selected items closer together">Tighten</button><button id="sDel">Delete</button><span class="hint" id="selN"></span>
+      <span class="hint">Drag a box on empty space (or Shift-click) to select several items, then drag, resize or delete them together.</span>
     </span>
   </div>
   <div class="tb m-asg">
@@ -489,7 +493,7 @@ $('lay').onchange=e=>setLay(e.target.value);
 setLay(store.get('layout','balanced'));
 
 /* Views, groups, seating */
-let view='screen',sel=null,D=null;
+let view='screen',sel=null,selx=new Set(),band=null,D=null;
 const defC=i=>({name:'Class '+(i+1),students:'',tog:'',apt:'',gmode:'size',gnum:4,groups:null,msg:'',seat:[]});
 try{D=JSON.parse(store.get('data','null'))}catch(e){}
 if(!D||!Array.isArray(D.classes)||D.classes.length!==3)D={cur:0,classes:[0,1,2].map(defC)};
@@ -505,7 +509,7 @@ const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a
 const find=id=>C().seat.find(i=>i.id===id);
 function setView(v){view=v;document.documentElement.dataset.view=v;document.querySelectorAll('#tabs button,.pviews button').forEach(b=>{b.classList.toggle('primary',b.dataset.v===v);b.setAttribute('aria-current',b.dataset.v===v?'page':'false')});if(v==='seating'){if(!modeSet){modeSet=1;setMode(C().seat.some(i=>i.t==='desk')?'asg':'arr')}else rSeat()}if(v==='groups')requestAnimationFrame(fitG)}
 document.querySelectorAll('#tabs button,.pviews button').forEach(b=>b.onclick=()=>setView(b.dataset.v));
-function tabs(){document.querySelectorAll('.ctabs').forEach(el=>{el.innerHTML='';D.classes.forEach((c,i)=>{const b=document.createElement('button');b.textContent=c.name||'Class '+(i+1);if(i===D.cur)b.className='primary';b.setAttribute('aria-pressed',i===D.cur);b.onclick=()=>{D.cur=i;sel=null;save();tabs();loadG();rSeat()};el.appendChild(b)})})}
+function tabs(){document.querySelectorAll('.ctabs').forEach(el=>{el.innerHTML='';D.classes.forEach((c,i)=>{const b=document.createElement('button');b.textContent=c.name||'Class '+(i+1);if(i===D.cur)b.className='primary';b.setAttribute('aria-pressed',i===D.cur);b.onclick=()=>{D.cur=i;sel=null;selx.clear();save();tabs();loadG();rSeat()};el.appendChild(b)})})}
 function loadG(){const c=C();$('cname').value=c.name;$('stu').value=c.students;$('tog').value=c.tog;$('apt').value=c.apt;$('gmode').value=c.gmode;$('gnum').value=c.gnum;gdot();rG()}
 function rG(){const c=C(),g=$('ggrid'),n=nm(c);g.innerHTML='';$('mk').textContent=c.groups?'Shuffle groups':'Make groups';$('scount').textContent='('+n.length+')';$('clcount').textContent=n.length+' student'+(n.length===1?'':'s');const ch=$('schips');ch.innerHTML='';n.forEach(x=>{const e=document.createElement('span');e.className='chip';e.textContent=x;ch.appendChild(e)});
   $('gmsg').textContent=c.msg||(!n.length?'':c.groups?'':'Press Make groups to shuffle everyone into groups.');
@@ -555,18 +559,31 @@ const GFX={
   board:SV('<rect x="1" y="8" width="98" height="70" rx="4" style="fill:var(--bg1);stroke:var(--text)" stroke-width="4" vector-effect="non-scaling-stroke"/><rect x="12" y="84" width="76" height="8" rx="3" style="fill:var(--muted);opacity:.6"/>'),
   window:SV('<rect x="2" y="10" width="96" height="80" rx="3" style="fill:rgba(120,170,210,.3);stroke:var(--muted)" '+ST+'/><path d="M50 10V90M2 50H98" style="stroke:var(--muted)" '+ST+'/>')};
 function newItem(t){const d=DEF[t],c=C(),n=c.seat.filter(i=>i.t===t).length;const it={id:'i'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),t,w:d[0],h:d[1],text:d[2],pin:false,x:30,y:45};if(t==='desk'){it.x=5+(n%7)*13;it.y=22+Math.floor(n/7)*11}if(t==='label')it.y=3;if(t==='door')it.x=92;if(t==='board'){it.x=35;it.y=1}if(t==='window'){it.x=0;it.y=30}if(t!=='desk'){const k=c.seat.filter(i=>i.t!=='desk').length%6;it.x=Math.max(0,Math.min(it.x+k*3,100-it.w));it.y+=k*7}it.y=Math.min(it.y,100-it.h);c.seat.push(it);return it}
-function rSeat(){ens(C());rLay();rPane();const r=$('room'),fa=document.activeElement,fcl=fa&&r.contains(fa)?fa.closest('.it'):null,fid=fcl?fcl.dataset.id:null;r.innerHTML='';const L=!!C().lock;['sRows','sCols','sGrid','sAdd','sBig','sSmall','sDel'].forEach(id=>$(id).disabled=L);$('sLock').textContent=L?'Unlock layout':'Lock layout';document.documentElement.dataset.lock=L?'1':'0';r.classList.toggle('nopins',!$('sPins').checked);C().seat.forEach(it=>{const e=document.createElement('div');e.className='it '+it.t+(it.id===sel?' sel':'')+(it.pin?' pin':'');e.dataset.id=it.id;e.style.cssText='left:'+it.x+'%;top:'+it.y+'%;width:'+it.w+'%;height:'+it.h+'%';if(it.t==='desk'&&it.text){const p=PH()[it.text];if(p){const im=document.createElement('img');im.src=p;e.appendChild(im)}const s=document.createElement('span');s.textContent=it.text;e.appendChild(s);const xb=document.createElement('b');xb.className='x';xb.textContent='×';xb.title='Remove from this seat';xb.tabIndex=0;xb.setAttribute('role','button');xb.setAttribute('aria-label','Remove '+it.text+' from this seat');xb.onclick=ev=>{ev.stopPropagation();pushU();it.text='';it.pin=false;$('sNote').textContent='';save();rSeat()};e.appendChild(xb);const q=(R()[it.text]||[]).find(x=>x.date===today());{const d=document.createElement('i');d.className='dot '+(q?q.attendance:'present');d.textContent={present:'✓',late:'L',absent:'A'}[q?q.attendance:'present'];d.title={present:'Present',late:'Late',absent:'Absent'}[q?q.attendance:'present'];e.appendChild(d)}if(q&&q.phone){const f=document.createElement('i');f.className='phn';f.innerHTML=PHSV[q.phone];f.style.color=PHC[q.phone];f.title='Phone: '+{g:'away',y:'reminder',r:'in use'}[q.phone];e.appendChild(f)}if(q&&q.participation!=null){const f=document.createElement('i');f.className='pbar';f.style.width=q.participation/5*100+'%';f.style.background=PC[q.participation];e.appendChild(f);const nn=document.createElement('i');nn.className='pnum';nn.textContent=q.participation+'/5';e.appendChild(nn)}const hs=hwSum(q);if(hs){const hb=document.createElement('i');hb.className='hw '+hs.cls;hb.textContent='HW '+hs.txt;hb.title='Homework: '+hs.t;e.appendChild(hb)}}else if(GFX[it.t]){e.className+=' gfx';e.innerHTML=GFX[it.t];const s=document.createElement('span');s.className='cap';s.textContent=it.text;e.appendChild(s)}else e.textContent=it.text;if(it.t==='desk'){e.tabIndex=0;e.setAttribute('role','group');e.setAttribute('aria-label',deskLabel(it))}r.appendChild(e)});if(fid){const n=r.querySelector('[data-id="'+fid+'"]');if(n)n.focus()}applyNs();syncName();;if(!C().seat.length){const m=document.createElement('div');m.className='emp';const n=nm(C()).length;m.innerHTML='<b>'+(n?'Next: build your room':'Set up this class')+'</b><ol>'+(n?'':'<li>Add your class list</li>')+'<li>In Arrange room, enter Rows and Columns and click Create desk grid</li><li>In Assign seats, click A–Z or Random</li></ol>';if(!n){const b=document.createElement('button');b.className='primary';b.textContent='Add class list';b.onclick=openCL;m.appendChild(b)}if(n&&smode!=='arr'){const b2=document.createElement('button');b2.className='primary';b2.textContent='Arrange room';b2.onclick=()=>{setMode('arr')};m.appendChild(b2)}r.appendChild(m)}}
+function rSeat(){ens(C());rLay();rPane();const r=$('room'),fa=document.activeElement,fcl=fa&&r.contains(fa)?fa.closest('.it'):null,fid=fcl?fcl.dataset.id:null;r.innerHTML='';const L=!!C().lock;['sRows','sCols','sGrid','sAdd','sBig','sSmall','sDel'].forEach(id=>$(id).disabled=L);$('sLock').textContent=L?'Unlock layout':'Lock layout';document.documentElement.dataset.lock=L?'1':'0';r.classList.toggle('nopins',!$('sPins').checked);C().seat.forEach(it=>{const e=document.createElement('div');e.className='it '+it.t+(isSel(it.id)?' sel':'')+(it.pin?' pin':'');e.dataset.id=it.id;e.style.cssText='left:'+it.x+'%;top:'+it.y+'%;width:'+it.w+'%;height:'+it.h+'%';if(it.t==='desk'&&it.text){const p=PH()[it.text];if(p){const im=document.createElement('img');im.src=p;e.appendChild(im)}const s=document.createElement('span');s.textContent=it.text;e.appendChild(s);const xb=document.createElement('b');xb.className='x';xb.textContent='×';xb.title='Remove from this seat';xb.tabIndex=0;xb.setAttribute('role','button');xb.setAttribute('aria-label','Remove '+it.text+' from this seat');xb.onclick=ev=>{ev.stopPropagation();pushU();it.text='';it.pin=false;$('sNote').textContent='';save();rSeat()};e.appendChild(xb);const q=(R()[it.text]||[]).find(x=>x.date===today());{const d=document.createElement('i');d.className='dot '+(q?q.attendance:'present');d.textContent={present:'✓',late:'L',absent:'A'}[q?q.attendance:'present'];d.title={present:'Present',late:'Late',absent:'Absent'}[q?q.attendance:'present'];e.appendChild(d)}if(q&&q.phone){const f=document.createElement('i');f.className='phn';f.innerHTML=PHSV[q.phone];f.style.color=PHC[q.phone];f.title='Phone: '+{g:'away',y:'reminder',r:'in use'}[q.phone];e.appendChild(f)}if(q&&q.participation!=null){const f=document.createElement('i');f.className='pbar';f.style.width=q.participation/5*100+'%';f.style.background=PC[q.participation];e.appendChild(f);const nn=document.createElement('i');nn.className='pnum';nn.textContent=q.participation+'/5';e.appendChild(nn)}const hs=hwSum(q);if(hs){const hb=document.createElement('i');hb.className='hw '+hs.cls;hb.textContent='HW '+hs.txt;hb.title='Homework: '+hs.t;e.appendChild(hb)}}else if(GFX[it.t]){e.className+=' gfx';e.innerHTML=GFX[it.t];const s=document.createElement('span');s.className='cap';s.textContent=it.text;e.appendChild(s)}else e.textContent=it.text;if(it.t==='desk'){e.tabIndex=0;e.setAttribute('role','group');e.setAttribute('aria-label',deskLabel(it))}r.appendChild(e)});if(fid){const n=r.querySelector('[data-id="'+fid+'"]');if(n)n.focus()}applyNs();syncName();;if(!C().seat.length){const m=document.createElement('div');m.className='emp';const n=nm(C()).length;m.innerHTML='<b>'+(n?'Next: build your room':'Set up this class')+'</b><ol>'+(n?'':'<li>Add your class list</li>')+'<li>In Arrange room, enter Rows and Columns and click Create desk grid</li><li>In Assign seats, click A–Z or Random</li></ol>';if(!n){const b=document.createElement('button');b.className='primary';b.textContent='Add class list';b.onclick=openCL;m.appendChild(b)}if(n&&smode!=='arr'){const b2=document.createElement('button');b2.className='primary';b2.textContent='Arrange room';b2.onclick=()=>{setMode('arr')};m.appendChild(b2)}r.appendChild(m)}}
 let dg=null;const room=$('room');
-room.onpointerdown=e=>{if(e.target.closest('.x'))return;const el=e.target.closest('.it');if(!el||e.target.isContentEditable||el.isContentEditable)return;const it=find(el.dataset.id);sel=it.id;room.querySelectorAll('.sel').forEach(x=>x.classList.remove('sel'));el.classList.add('sel');syncName();dg={it,el,sx:e.clientX,sy:e.clientY,x0:it.x,y0:it.y,mv:false,nodrag:smode==='trk'||(smode==='asg'&&it.t!=='desk')||(smode==='arr'&&!!C().lock)};room.setPointerCapture(e.pointerId)};
-room.onpointermove=e=>{if(!dg||dg.nodrag)return;const b=room.getBoundingClientRect(),i=dg.it;if(Math.abs(e.clientX-dg.sx)+Math.abs(e.clientY-dg.sy)>4&&!dg.mv){pushU();dg.mv=true}if(!dg.mv)return;i.x=Math.max(0,Math.min(100-i.w,dg.x0+(e.clientX-dg.sx)/b.width*100));i.y=Math.max(0,Math.min(100-i.h,dg.y0+(e.clientY-dg.sy)/b.height*100));dg.el.style.left=i.x+'%';dg.el.style.top=i.y+'%'};
-room.onpointerup=()=>{if(!dg)return;const{it,x0,y0,mv}=dg;dg=null;if(!mv){if(it.t==='desk'&&!document.body.classList.contains('clean')){if(smode==='trk'){if(it.text)openPop(it)}else if(smode==='asg'&&!it.text)showMenu(it)}return}if(it.t==='desk'){const cx=it.x+it.w/2,cy=it.y+it.h/2,o=C().seat.find(d=>d!==it&&d.t==='desk'&&cx>d.x&&cx<d.x+d.w&&cy>d.y&&cy<d.y+d.h);if(smode==='asg'){it.x=x0;it.y=y0;if(o){[it.text,o.text]=[o.text,it.text];[it.pin,o.pin]=[o.pin,it.pin]}}else if(o){it.x=o.x;it.y=o.y;o.x=x0;o.y=y0}}save();rSeat()};
+room.onpointerdown=e=>{if(e.target.closest('.x'))return;const el=e.target.closest('.it');if(!el&&smode==='arr'&&(e.target===room||e.target.closest('.emp'))){startBand(e);return}if(!el||e.target.isContentEditable||el.isContentEditable)return;const it=find(el.dataset.id);
+if(smode==='arr'&&(e.shiftKey||e.ctrlKey||e.metaKey)){if(!selx.size&&sel)selx.add(sel);if(selx.has(it.id))selx.delete(it.id);else selx.add(it.id);sel=selx.size?it.id:null;paintSel();syncName();return}
+if(!(smode==='arr'&&selx.size>1&&selx.has(it.id))){sel=it.id;selx=new Set([it.id])}
+paintSel();syncName();
+dg={it,el,sx:e.clientX,sy:e.clientY,x0:it.x,y0:it.y,group:smode==='arr'&&selx.size>1?[...selx].map(id=>find(id)).filter(Boolean).map(o=>({o,x0:o.x,y0:o.y})):null,mv:false,nodrag:smode==='trk'||(smode==='asg'&&it.t!=='desk')||(smode==='arr'&&!!C().lock)};room.setPointerCapture(e.pointerId)};
+room.onpointermove=e=>{
+  if(band){const r=room.getBoundingClientRect(),x1=Math.min(band.sx,e.clientX),y1=Math.min(band.sy,e.clientY),x2=Math.max(band.sx,e.clientX),y2=Math.max(band.sy,e.clientY);band.el.style.cssText='left:'+(x1-r.left)+'px;top:'+(y1-r.top)+'px;width:'+(x2-x1)+'px;height:'+(y2-y1)+'px';band.box=[x1,y1,x2,y2];if(x2-x1+y2-y1>6)bandSel();return}
+  if(!dg||dg.nodrag)return;
+  const b=room.getBoundingClientRect(),i=dg.it;
+  if(Math.abs(e.clientX-dg.sx)+Math.abs(e.clientY-dg.sy)>4&&!dg.mv){pushU();dg.mv=true}
+  if(!dg.mv)return;
+  let dx=(e.clientX-dg.sx)/b.width*100,dy=(e.clientY-dg.sy)/b.height*100;
+  const grp=dg.group||[{o:i,x0:dg.x0,y0:dg.y0}];
+  grp.forEach(m=>{dx=Math.max(-m.x0,Math.min(100-m.o.w-m.x0,dx));dy=Math.max(-m.y0,Math.min(100-m.o.h-m.y0,dy))});
+  grp.forEach(m=>{m.o.x=m.x0+dx;m.o.y=m.y0+dy;const el=room.querySelector('[data-id="'+m.o.id+'"]');if(el){el.style.left=m.o.x+'%';el.style.top=m.o.y+'%'}})};
+room.onpointerup=()=>{if(band){endBand();return}if(!dg)return;const{it,x0,y0,mv,group}=dg;dg=null;if(!mv){if(smode==='arr'&&group){sel=it.id;selx=new Set([it.id]);paintSel();syncName()}if(it.t==='desk'&&!document.body.classList.contains('clean')){if(smode==='trk'){if(it.text)openPop(it)}else if(smode==='asg'&&!it.text)showMenu(it)}return}if(it.t==='desk'&&!group){const cx=it.x+it.w/2,cy=it.y+it.h/2,o=C().seat.find(d=>d!==it&&d.t==='desk'&&cx>d.x&&cx<d.x+d.w&&cy>d.y&&cy<d.y+d.h);if(smode==='asg'){it.x=x0;it.y=y0;if(o){[it.text,o.text]=[o.text,it.text];[it.pin,o.pin]=[o.pin,it.pin]}}else if(o){it.x=o.x;it.y=o.y;o.x=x0;o.y=y0}}save();rSeat()};
 room.ondblclick=e=>{const el=(document.elementFromPoint(e.clientX,e.clientY)||e.target).closest('.it');if(!el)return;const it=find(el.dataset.id);if(it.t!=='desk'&&!C().lock){const t=el.querySelector('.cap')||el;t.contentEditable='true';t.focus()}};
 room.addEventListener('focusout',e=>{const el=e.target;if(!el.isContentEditable)return;const it=find((el.closest('.it')||el).dataset.id);if(it){it.text=el.textContent;save();syncName()}el.contentEditable='false'});
-$('sAdd').onchange=e=>{const t=e.target.value;e.target.value='';if(!t)return;pushU();sel=newItem(t).id;save();rSeat();if(t!=='desk'){const i=$('sItemName');i.focus();i.select()}};
+$('sAdd').onchange=e=>{const t=e.target.value;e.target.value='';if(!t)return;pushU();selx.clear();sel=newItem(t).id;save();rSeat();if(t!=='desk'){const i=$('sItemName');i.focus();i.select()}};
 function place(){const c=C(),n=nm(c),ds=c.seat.filter(i=>i.t==='desk');ds.forEach(d=>{if(d.text&&!n.includes(d.text))d.text=''});const have=new Set(ds.map(d=>d.text));n.filter(x=>!have.has(x)).forEach(x=>{let e=ds.find(d=>!d.text);if(!e){e=newItem('desk');ds.push(e)}e.text=x});save();rSeat()}
 function rnd(){const ds=C().seat.filter(i=>i.t==='desk'&&!i.pin),s=shuffle(ds.map(d=>d.text));ds.forEach((d,i)=>d.text=s[i]);save();rSeat()}
-function sz(f){const i=sel&&find(sel);if(!i)return;pushU();i.w=Math.min(60,i.w*f);i.h=Math.min(60,i.h*f);i.x=Math.min(i.x,100-i.w);i.y=Math.min(i.y,100-i.h);save();rSeat()}
-function delSel(){if(!sel||C().lock)return;pushU();C().seat=C().seat.filter(i=>i.id!==sel);sel=null;save();rSeat()}
+function sz(f){const its=selIds().map(find).filter(Boolean);if(!its.length){toast('Select items first.');return}pushU();its.forEach(i=>{const cx=i.x+i.w/2,cy=i.y+i.h/2;i.w=Math.min(60,Math.max(2,i.w*f));i.h=Math.min(60,Math.max(2,i.h*f));i.x=Math.max(0,Math.min(100-i.w,cx-i.w/2));i.y=Math.max(0,Math.min(100-i.h,cy-i.h/2))});save();rSeat()}
+function delSel(){const ids=selIds();if(!ids.length||C().lock)return;pushU();C().seat=C().seat.filter(i=>!ids.includes(i.id));sel=null;selx.clear();save();rSeat()}
 function order(ds,corner,dir){
   const bottom=corner[0]==='b',right=corner[1]==='r',rm=dir==='row';
   const a=d=>rm?d.y+d.h/2:d.x+d.w/2,b=d=>rm?d.x+d.w/2:d.y+d.h/2;
@@ -588,11 +605,11 @@ function grid(){
   pushU();c.seat=c.seat.filter(i=>i.t!=='desk');
   const cw=88/k,ch=78/r,w=Math.min(cw*.82,16),h=Math.min(ch*.76,12);
   for(let i=0;i<r;i++)for(let j=0;j<k;j++){const it=newItem('desk');it.w=w;it.h=h;it.x=6+j*cw+(cw-w)/2;it.y=18+i*ch+(ch-h)/2}
-  sel=null;save();rSeat()}
+  sel=null;selx.clear();save();rSeat()}
 let arm=0;
 function gridGo(){const b=$('sGrid');if(!arm&&C().seat.some(i=>i.t==='desk'&&(i.text||i.pin))){arm=1;b.textContent='Replace desks? Click again';setTimeout(()=>{arm=0;b.textContent='Create desk grid'},3000);return}arm=0;b.textContent='Create desk grid';grid()}
 $('sGrid').onclick=gridGo;$('sAlpha').onclick=()=>fill('alpha');$('sRnd').onclick=()=>fill('rand');
-$('sLock').onclick=()=>{pushU();const c=C();c.lock=!c.lock;sel=null;save();rSeat()};$('sPins').onchange=rSeat;$('sBig').onclick=()=>sz(1.15);$('sSmall').onclick=()=>sz(1/1.15);$('sDel').onclick=delSel;
+$('sLock').onclick=()=>{pushU();const c=C();c.lock=!c.lock;sel=null;selx.clear();save();rSeat()};$('sPins').onchange=rSeat;$('sBig').onclick=()=>sz(1.15);$('sSmall').onclick=()=>sz(1/1.15);$('sDel').onclick=delSel;
 /* Records, photos */
 const R=()=>C().rec=C().rec||{},PH=()=>C().photos=C().photos||{};
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
@@ -643,8 +660,8 @@ $('phf').onchange=async e=>{
 $('sExp2').onclick=()=>$('exp').click();$('sImp2').onclick=()=>$('imp').click();
 /* Layouts */
 function ens(c){if(!c.layouts){c.layouts=[{name:'Layout 1',seat:c.seat||[],lock:!!c.lock}];c.lay=0}if(!c.layouts[c.lay])c.lay=0;if(!c.seat)c.seat=c.layouts[c.lay].seat}
-function rLay(){const c=C(),s=$('sLay');s.innerHTML='';c.layouts.forEach((l,i)=>{const o=document.createElement('option');o.value=i;o.textContent=l.name||'Untitled';s.appendChild(o)});s.value=c.lay;$('sLname').value=c.layouts[c.lay].name;$('sLdel').disabled=c.layouts.length<2}
-function useL(c,i){c.lay=i;c.seat=c.layouts[i].seat;c.lock=c.layouts[i].lock;sel=null}
+function rLay(){const c=C(),s=$('sLay');s.innerHTML='';c.layouts.forEach((l,i)=>{const o=document.createElement('option');o.value=i;o.textContent=l.name||'Untitled';s.appendChild(o)});s.value=c.lay;$('sLname').value=c.layouts[c.lay].name;$('sLdel').disabled=c.layouts.length<2;rShare()}
+function useL(c,i){c.lay=i;c.seat=c.layouts[i].seat;c.lock=c.layouts[i].lock;sel=null;selx.clear()}
 $('sLay').onchange=e=>{const c=C();save();useL(c,+e.target.value);save();rSeat()};
 $('sLname').oninput=e=>{const c=C();c.layouts[c.lay].name=e.target.value;$('sLay').selectedOptions[0].textContent=e.target.value||'Untitled';save()};
 function addL(copy){pushU();const c=C();save();const b=c.layouts[c.lay],l={name:copy?b.name+' copy':'Layout '+(c.layouts.length+1),seat:copy?c.seat.map(i=>({...i,text:i.t==='desk'?'':i.text,pin:false})):[],lock:false};c.layouts.push(l);useL(c,c.layouts.length-1);save();rSeat()}
@@ -710,9 +727,9 @@ let smode='asg',modeSet=0,tt=0,pk=0,rt=0;
 function toast(m,ms){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('on'),ms||1800)}
 const U=[];
 function pushU(){const c=C();ens(c);save();U.push({ci:D.cur,s:JSON.stringify({l:c.layouts,y:c.lay,g:c.groups,n:c.gnames,m:c.msg})});if(U.length>60)U.shift();$('undo').disabled=false}
-function undo(){const u=U.pop();$('undo').disabled=!U.length;if(!u){toast('Nothing to undo');return}D.cur=u.ci;const c=C(),o=JSON.parse(u.s);c.layouts=o.l;c.lay=o.y;c.seat=c.layouts[c.lay].seat;c.lock=c.layouts[c.lay].lock;c.groups=o.g;c.gnames=o.n;c.msg=o.m;sel=null;save();tabs();loadG();rSeat();toast('Undone')}
+function undo(){const u=U.pop();$('undo').disabled=!U.length;if(!u){toast('Nothing to undo');return}D.cur=u.ci;const c=C(),o=JSON.parse(u.s);c.layouts=o.l;c.lay=o.y;c.seat=c.layouts[c.lay].seat;c.lock=c.layouts[c.lay].lock;c.groups=o.g;c.gnames=o.n;c.msg=o.m;sel=null;selx.clear();save();tabs();loadG();rSeat();toast('Undone')}
 $('undo').onclick=undo;
-function setMode(m){smode=m;document.documentElement.dataset.smode=m;document.querySelectorAll('#smodes button').forEach(b=>{b.classList.toggle('on',b.dataset.m===m);b.setAttribute('aria-pressed',b.dataset.m===m)});hideMenu();if(!$('mod').hidden)$('msave').click();sel=null;rSeat()}
+function setMode(m){smode=m;document.documentElement.dataset.smode=m;document.querySelectorAll('#smodes button').forEach(b=>{b.classList.toggle('on',b.dataset.m===m);b.setAttribute('aria-pressed',b.dataset.m===m)});hideMenu();if(!$('mod').hidden)$('msave').click();sel=null;selx.clear();rSeat()}
 document.querySelectorAll('#smodes button').forEach(b=>b.onclick=()=>{modeSet=1;setMode(b.dataset.m)});
 function quick(it){const n=it.text,a=recs(n),t=today(),r=a.find(x=>x.date===t),nx={present:'late',late:'absent',absent:'present'}[r?r.attendance:'present'];if(r)r.attendance=nx;else a.push({date:t,attendance:nx,participation:null,phone:null,notes:''});if(nx==='present'&&r&&r.participation==null&&!r.phone&&!r.notes)a.splice(a.indexOf(r),1);save();rSeat();toast(n+': '+CAP(nx))}
 function openPop(it){openM(it);$('mod').classList.add('pop');placePop()}
@@ -772,9 +789,29 @@ let armH=0;
 $('hwdel').onclick=()=>{const b=$('hwdel'),d=hwDefs();if(d.length<2)return;if(!armH){armH=1;b.textContent='Click again to remove';setTimeout(()=>{armH=0;b.textContent='Remove last check'},3000);return}armH=0;b.textContent='Remove last check';d.pop();const c=C();Object.values(c.rec||{}).forEach(a=>a.forEach(r=>{if(r.date===mD&&r.hw)r.hw=r.hw.slice(0,d.length)}));mhw=mhw.slice(0,d.length);save();rHW();rSeat()};
 /* Rename the selected room item */
 let rn=0;
-function syncName(){const it=sel&&find(sel),i=$('sItemName');if(it&&it.t!=='desk'){i.disabled=false;i.value=it.text||'';i.placeholder='Item name'}else{i.disabled=true;i.value='';i.placeholder=it?'Seats hold student names':'Select an item to rename'}}
-$('sItemName').oninput=e=>{const it=sel&&find(sel);if(!it||it.t==='desk')return;if(!rn){pushU();rn=1}it.text=e.target.value;const el=$('room').querySelector('[data-id="'+it.id+'"]');if(el){const t=el.querySelector('.cap')||el;t.textContent=it.text}save()};
+function syncName(){const ids=selIds(),it=ids.length===1?find(ids[0]):null,i=$('sItemName');$('selN').textContent=ids.length>1?ids.length+' selected':'';if(it&&it.t!=='desk'){i.disabled=false;i.value=it.text||'';i.placeholder='Item name'}else{i.disabled=true;i.value='';i.placeholder=ids.length>1?'Select one item to rename':it?'Seats hold student names':'Select an item to rename'}}
+$('sItemName').oninput=e=>{const ids=selIds(),it=ids.length===1?find(ids[0]):null;if(!it||it.t==='desk')return;if(!rn){pushU();rn=1}it.text=e.target.value;const el=$('room').querySelector('[data-id="'+it.id+'"]');if(el){const t=el.querySelector('.cap')||el;t.textContent=it.text}save()};
 $('sItemName').onblur=()=>{rn=0};
+/* Multi-select in Arrange mode */
+const isSel=id=>selx.size?selx.has(id):id===sel,selIds=()=>selx.size?[...selx]:(sel?[sel]:[]);
+function paintSel(){room.querySelectorAll('.it').forEach(x=>x.classList.toggle('sel',isSel(x.dataset.id)))}
+function clearSel(){sel=null;selx=new Set();paintSel();syncName()}
+function selectSet(k){if(k==='all'||k==='desks'){selx=new Set(C().seat.filter(i=>k==='all'||i.t==='desk').map(i=>i.id));sel=[...selx].pop()||null;paintSel();syncName()}else if(k==='none')clearSel()}
+$('sSelect').onchange=e=>{selectSet(e.target.value);e.target.value=''};
+function bandSel(){const [x1,y1,x2,y2]=band.box,ids=[];room.querySelectorAll('.it').forEach(el=>{const r=el.getBoundingClientRect();if(r.right>=x1&&r.left<=x2&&r.bottom>=y1&&r.top<=y2)ids.push(el.dataset.id)});selx=new Set(band.add?[...band.base,...ids]:ids);sel=selx.size?[...selx].pop():null;paintSel();syncName()}
+function startBand(e){const el=document.createElement('div');el.className='band';room.appendChild(el);band={sx:e.clientX,sy:e.clientY,el,add:e.shiftKey||e.ctrlKey||e.metaKey,base:[...selx],box:[e.clientX,e.clientY,e.clientX,e.clientY]};if(!band.add)clearSel();room.setPointerCapture(e.pointerId)}
+function endBand(){const b=band;band=null;if(b.el.parentNode)b.el.remove()}
+function spread(f){const its=selIds().map(find).filter(Boolean);if(its.length<2){toast('Select two or more items first.');return}pushU();const cx=its.reduce((s,i)=>s+i.x+i.w/2,0)/its.length,cy=its.reduce((s,i)=>s+i.y+i.h/2,0)/its.length;its.forEach(i=>{i.x=Math.max(0,Math.min(100-i.w,cx+(i.x+i.w/2-cx)*f-i.w/2));i.y=Math.max(0,Math.min(100-i.h,cy+(i.y+i.h/2-cy)*f-i.h/2))});save();rSeat()}
+$('sSpread').onclick=()=>spread(1.1);$('sTight').onclick=()=>spread(1/1.1);
+/* Share room layouts between classes (copies; seats start empty) */
+const cname=(k,i)=>k.name||'Class '+(i+1);
+function cloneLayout(l,name){return{name,seat:JSON.parse(JSON.stringify(l.seat)).map(i=>({...i,text:i.t==='desk'?'':i.text,pin:false})),lock:false}}
+function rShare(){const s=$('sShare'),others=D.classes.map((k,i)=>[k,i]).filter(([k,i])=>i!==D.cur);s.innerHTML='';s.appendChild(new Option('Share layout…',''));
+  const g1=document.createElement('optgroup');g1.label='Copy this layout to';others.forEach(([k,i])=>g1.appendChild(new Option(cname(k,i),'to:'+i)));if(others.length>1)g1.appendChild(new Option('All other classes','to:all'));s.appendChild(g1);
+  const g2=document.createElement('optgroup');g2.label='Use a layout from';others.forEach(([k,i])=>{ens(k);k.layouts.forEach((l,j)=>{if(l.seat.length)g2.appendChild(new Option(cname(k,i)+': '+(l.name||'Untitled'),'from:'+i+':'+j))})});if(g2.children.length)s.appendChild(g2)}
+$('sShare').onchange=e=>{const v=e.target.value;e.target.value='';if(!v)return;const c=C();save();
+  if(v.startsWith('to:')){const cur=c.layouts[c.lay],t=v.slice(3),ts=t==='all'?D.classes.map((k,i)=>i).filter(i=>i!==D.cur):[+t];ts.forEach(i=>{const k=D.classes[i];ens(k);k.layouts.push(cloneLayout(cur,(cur.name||'Layout')+' (from '+cname(c,D.cur)+')'))});save();rShare();toast('Layout copied to '+(t==='all'?'all other classes':cname(D.classes[+t],+t))+'. Seats start empty.',3500)}
+  else{const[,i,j]=v.split(':'),k=D.classes[+i],l=k.layouts[+j];pushU();c.layouts.push(cloneLayout(l,(l.name||'Layout')+' (from '+cname(k,+i)+')'));useL(c,c.layouts.length-1);save();rSeat();toast('Layout copied from '+cname(k,+i)+'. Seats start empty.',3500)}};
 tabs();loadG();setView('screen');
 
 /* Theme, controls, fullscreen */
@@ -783,9 +820,10 @@ if(th)document.documentElement.dataset.theme=th;
 document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{document.documentElement.dataset.theme=b.dataset.t;store.set('theme',b.dataset.t)});
 $('clean').onclick=()=>document.body.classList.add('clean');
 addEventListener('keydown',e=>{
-  if(e.key==='Escape'){if(!$('mod').hidden)$('msave').click();else{document.body.classList.remove('clean');hideMenu()}return}
+  if(e.key==='Escape'){if(view==='seating'&&smode==='arr'&&(selx.size||sel)&&$('mod').hidden&&!document.body.classList.contains('clean')){clearSel();return}if(!$('mod').hidden)$('msave').click();else{document.body.classList.remove('clean');hideMenu()}return}
   if(e.target.isContentEditable||['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName))return;
   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'&&!e.shiftKey){e.preventDefault();undo();return}
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='a'&&view==='seating'&&smode==='arr'){e.preventDefault();selectSet('all');return}
   if(document.body.classList.contains('clean')){const vs=['screen','groups','seating'];if(e.key==='1'||e.key==='2'||e.key==='3'){setView(vs[+e.key-1]);return}if(e.key==='ArrowRight'||e.key==='ArrowLeft'){setView(vs[(vs.indexOf(view)+(e.key==='ArrowRight'?1:2))%3]);return}}
   if(e.key==='h'||e.key==='H')document.body.classList.toggle('clean');
   if((e.key==='l'||e.key==='L')&&view==='screen')setLay(LAY[(LAY.indexOf(document.documentElement.dataset.layout)+1)%LAY.length]);
