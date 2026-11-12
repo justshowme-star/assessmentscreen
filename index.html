@@ -884,7 +884,7 @@ $('mnext2').onclick=()=>{const ds=C().seat.filter(i=>i.t==='desk'&&i.text),od=ds
 room.addEventListener('pointercancel',()=>{dg=null;if(band)endBand()});
 setPhone();
 document.querySelectorAll('#pv button').forEach(x=>x.classList.toggle('on',x.dataset.p===document.documentElement.dataset.pv));
-tabs();loadG();setView('screen');
+tabs();loadG();setView('seating');
 
 /* Theme, controls, fullscreen */
 const th=store.get('theme','');
