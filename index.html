@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-smode="asg" data-lock="0">
+<html lang="en" data-smode="asg" data-lock="0" data-phone="0" data-pv="plan">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -267,6 +267,40 @@ body.clean #mk{flex:none;font-size:max(2.6vmin,18px);padding:1.2vmin 3vmin}
 #sLay{max-width:17ch;text-overflow:ellipsis}
 #sShare{max-width:13ch;text-overflow:ellipsis}
 .band{position:absolute;border:2px dashed var(--accent);background:color-mix(in srgb,var(--accent) 15%,transparent);pointer-events:none;z-index:6}
+.phone-only{display:none}
+.m-trk .hint.desk-hint{display:inline}
+#plist2{display:none}
+.lrow{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:52px;text-align:left;font-size:17px;padding:8px 14px;background:var(--card);border:2px solid var(--bar);border-radius:12px}
+.lrow .ln{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lm{display:flex;align-items:center;gap:6px;flex:none}
+.lm i{font-style:normal;font-size:13px;font-weight:700;border-radius:99px;padding:2px 8px;color:#fff;line-height:1.4}
+.lm .dot{width:26px;height:26px;min-width:0;min-height:0;display:inline-flex;align-items:center;justify-content:center;padding:0;border:0;position:static}
+.lm .hw.d{background:#2e7d32}.lm .hw.h{background:#b58900;color:#1a1a1a}.lm .hw.n{background:#c62828}
+.lm .phn{width:24px;height:24px;padding:0;background:none;display:inline-block}.lm .phn svg{width:100%;height:100%;display:block}
+.mh input{flex:1;min-width:0}
+[data-phone="1"] body{padding:8px;gap:8px}
+[data-phone="1"] #topact,[data-phone="1"] #bar,[data-phone="1"] #smodes,[data-phone="1"] .m-arr,[data-phone="1"] .m-asg,[data-phone="1"] #sNames,[data-phone="1"] #nsbar,[data-phone="1"] .m-trk .hint.desk-hint{display:none!important}
+[data-phone="1"] .phone-only{display:inline-flex}
+[data-phone="1"] .m-trk .hint.phone-only{display:block}
+[data-phone="1"] #tabs button,[data-phone="1"] .tb button,[data-phone="1"] .tb select{min-height:44px;font-size:15px}
+[data-phone="1"] .tb{gap:6px}
+[data-phone="1"] input,[data-phone="1"] select,[data-phone="1"] textarea{font-size:16px}
+[data-phone="1"] #sbody{overflow:auto}
+[data-phone="1"] #room{flex:none;width:max(100%,780px);aspect-ratio:16/10;height:auto;touch-action:auto}
+[data-phone="1"][data-pv="list"] #room{display:none}
+[data-phone="1"][data-pv="list"] #plist2{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0;overflow:auto}
+[data-phone="1"] #mod,[data-phone="1"] #mod.pop{padding:0;background:var(--bg1);pointer-events:auto}
+[data-phone="1"] #mbox,[data-phone="1"] #mod.pop #mbox{position:fixed;inset:0;left:0;top:0;width:100%;max-width:none;max-height:none;border-radius:0;border:0;box-shadow:none;padding:16px 16px 0;overflow:auto;display:flex;flex-direction:column;gap:10px}
+[data-phone="1"] #mbox button{min-height:48px;font-size:16px}
+[data-phone="1"] .mact{position:sticky;bottom:0;background:var(--bg1);padding:12px 0 calc(12px + env(safe-area-inset-bottom,0px));z-index:3;margin-top:auto}
+[data-phone="1"] #mod.pop textarea{min-height:90px;height:90px}
+[data-phone="1"] #sCsvMode,[data-phone="1"] #sCsv{display:none!important}
+[data-phone="1"] #tabs button,[data-phone="1"] .tb button,[data-phone="1"] .tb select{min-height:40px;padding:6px 12px;font-size:15px}
+[data-phone="1"] .tb{margin-bottom:2px}
+[data-phone="1"] .m-trk .hint.phone-only{font-size:12px;flex:1 1 100%;margin:0}
+[data-phone="1"] .it.desk{padding-left:20px}
+[data-phone="1"] *{-webkit-tap-highlight-color:transparent}
+[data-phone="1"] #sLay{max-width:11ch}
 </style>
 </head>
 <body>
@@ -343,14 +377,16 @@ body.clean #mk{flex:none;font-size:max(2.6vmin,18px);padding:1.2vmin 3vmin}
   </div>
   <div class="tb m-trk">
     <select id="sCsvMode" aria-label="What to export as CSV"><option value="rec-cur">CSV: daily records, this class</option><option value="rec-all">CSV: daily records, all classes</option><option value="hw-cur">CSV: homework checks, this class</option><option value="hw-all">CSV: homework checks, all classes</option><option value="sum-cur">CSV: summary per student, this class</option><option value="sum-all">CSV: summary per student, all classes</option></select><button id="sCsv">Export CSV</button>
-    <span class="hint">Click a student to open their tracking menu: attendance, participation, homework, phone use and notes.</span>
+    <span class="hint desk-hint">Click a student to open their tracking menu: attendance, participation, homework, phone use and notes.</span>
+    <span class="seg phone-only" id="pv"><button data-p="plan">Plan</button><button data-p="list">List</button></span>
+    <span class="hint phone-only">This phone keeps its own data. Use Save and Load to sync.</span>
   </div>
-  <div id="sbody"><aside id="pane" class="card"><div class="label">Unassigned <span id="pcount"></span></div><div id="plist"></div></aside><div id="room" role="region" aria-label="Seating plan"></div><div id="nsbar"><label>Name size <input type="range" id="nsl" min="1" max="3" step="0.05" value="1" aria-label="Name size"></label><button id="nfit" title="Make the names as large as the room allows">Fit</button></div></div>
+  <div id="sbody"><aside id="pane" class="card"><div class="label">Unassigned <span id="pcount"></span></div><div id="plist"></div></aside><div id="room" role="region" aria-label="Seating plan"></div><div id="plist2" role="list" aria-label="Students"></div><div id="nsbar"><label>Name size <input type="range" id="nsl" min="1" max="3" step="0.05" value="1" aria-label="Name size"></label><button id="nfit" title="Make the names as large as the room allows">Fit</button></div></div>
   <div id="smenu" hidden aria-label="Unassigned students"></div>
 </section>
 <div id="mod" hidden><div id="mbox" tabindex="-1" role="dialog" aria-label="Student record">
   <div>
-    <div class="mh"><img id="mimg" hidden alt=""><input id="mname" aria-label="Student name"></div>
+    <div class="mh"><img id="mimg" hidden alt=""><input id="mname" aria-label="Student name"><button id="mx" class="phone-only" aria-label="Close" style="margin-left:auto">✕</button></div>
     <div class="pop-hide"><div class="fl">Date</div><input id="mdate" type="date"></div>
     <div class="fl">Attendance (everyone starts as Present)</div>
     <div class="tctl" role="group" aria-label="Attendance"><button class="att" data-v="present">Present</button><button class="att" data-v="late">Late</button><button class="att" data-v="absent">Absent</button></div>
@@ -364,7 +400,7 @@ body.clean #mk{flex:none;font-size:max(2.6vmin,18px);padding:1.2vmin 3vmin}
     <div class="hint pop-hide">Green: phone away · Yellow: reminder given · Red: phone in use</div>
     <div class="fl">Notes</div><textarea id="mnotes"></textarea>
     <label class="hint"><input type="checkbox" id="mpin"> Pin to this seat</label>
-    <div class="tctl" style="margin-top:1.4vmin"><button class="primary" id="msave">Done</button><button id="mclose" hidden>Close</button><button id="mhist" class="pop-only">History &amp; details</button><span class="hint" id="mstat"></span></div>
+    <div class="tctl mact" style="margin-top:1.4vmin"><button class="primary" id="msave">Done</button><button id="mnext2" class="phone-only">Next student ›</button><button id="mclose" hidden>Close</button><button id="mhist" class="pop-only">History &amp; details</button><span class="hint" id="mstat"></span></div>
   </div>
   <div id="mright">
     <div class="tctl"><button id="mprev">&larr;</button><b id="mtitle"></b><button id="mnext">&rarr;</button></div>
@@ -407,7 +443,7 @@ body.clean #mk{flex:none;font-size:max(2.6vmin,18px);padding:1.2vmin 3vmin}
 </div>
 <script>
 const $=id=>document.getElementById(id);
-const store={get(k,d){try{const v=localStorage.getItem('cs_'+k);return v===null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem('cs_'+k,v)}catch(e){}}};
+const store={get(k,d){try{const v=localStorage.getItem('cs_'+k);return v===null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem('cs_'+k,v);return true}catch(e){if(k==='data')storeFail();return false}}};
 
 /* Clock (12-hour) */
 function tick(){
@@ -502,12 +538,19 @@ function mig(o){const each=f=>o.classes.forEach(c=>Object.values(c.rec||{}).forE
   if(!(o.v>=3))each(r=>{if(typeof r.phone==='boolean')r.phone=r.phone?'r':'g'});
   if(!(o.v>=4))each(r=>{if(r.homework){r.hw=[r.homework]}delete r.homework});o.v=4}
 mig(D);
-const save=()=>{D.classes.forEach(c=>{if(c.layouts&&c.layouts[c.lay]){const l=c.layouts[c.lay];l.seat=c.seat;l.lock=!!c.lock}});store.set('data',JSON.stringify(D))};
+let sfT=0,sfW=0;
+function storeFail(){const n=Date.now();if(n-sfT<20000)return;sfT=n;if(typeof toast==='function')toast('Browser storage is full, so recent changes are NOT being kept. Click Save now to download a backup file.',10000)}
+const syncL=()=>D.classes.forEach(c=>{if(c.layouts&&c.layouts[c.lay]){const l=c.layouts[c.lay];l.seat=c.seat;l.lock=!!c.lock}});
+let svT=0;
+function persist(){svT=0;const j=JSON.stringify(D);const ok=store.set('data',j);const t='Download a backup file. Data in this browser: '+(j.length/1e6).toFixed(1)+' MB of about 5 MB.';['sExp2','exp'].forEach(id=>{const e=document.getElementById(id);if(e)e.title=t});if(ok&&j.length>4e6&&!sfW){sfW=1;if(typeof toast==='function')toast('Browser storage is almost full ('+(j.length/1e6).toFixed(1)+' MB of about 5 MB). Click Save to download a backup.',8000)}}
+const save=()=>{syncL();if(!svT)svT=setTimeout(persist,300)};
+const saveNow=()=>{if(!svT)return;clearTimeout(svT);syncL();persist()};
+addEventListener('pagehide',saveNow);document.addEventListener('visibilitychange',()=>{if(document.hidden)saveNow()});
 const C=()=>D.classes[D.cur];
 const nm=c=>[...new Set(c.students.split('\n').map(s=>s.trim()).filter(Boolean))];
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
 const find=id=>C().seat.find(i=>i.id===id);
-function setView(v){view=v;document.documentElement.dataset.view=v;document.querySelectorAll('#tabs button,.pviews button').forEach(b=>{b.classList.toggle('primary',b.dataset.v===v);b.setAttribute('aria-current',b.dataset.v===v?'page':'false')});if(v==='seating'){if(!modeSet){modeSet=1;setMode(C().seat.some(i=>i.t==='desk')?'asg':'arr')}else rSeat()}if(v==='groups')requestAnimationFrame(fitG)}
+function setView(v){view=v;document.documentElement.dataset.view=v;document.querySelectorAll('#tabs button,.pviews button').forEach(b=>{b.classList.toggle('primary',b.dataset.v===v);b.setAttribute('aria-current',b.dataset.v===v?'page':'false')});if(v==='seating'){if(isPhone()){modeSet=1;setMode('trk')}else if(!modeSet){modeSet=1;setMode(C().seat.some(i=>i.t==='desk')?'asg':'arr')}else rSeat()}if(v==='groups')requestAnimationFrame(fitG)}
 document.querySelectorAll('#tabs button,.pviews button').forEach(b=>b.onclick=()=>setView(b.dataset.v));
 function tabs(){document.querySelectorAll('.ctabs').forEach(el=>{el.innerHTML='';D.classes.forEach((c,i)=>{const b=document.createElement('button');b.textContent=c.name||'Class '+(i+1);if(i===D.cur)b.className='primary';b.setAttribute('aria-pressed',i===D.cur);b.onclick=()=>{D.cur=i;sel=null;selx.clear();save();tabs();loadG();rSeat()};el.appendChild(b)})})}
 function loadG(){const c=C();$('cname').value=c.name;$('stu').value=c.students;$('tog').value=c.tog;$('apt').value=c.apt;$('gmode').value=c.gmode;$('gnum').value=c.gnum;gdot();rG()}
@@ -559,7 +602,7 @@ const GFX={
   board:SV('<rect x="1" y="8" width="98" height="70" rx="4" style="fill:var(--bg1);stroke:var(--text)" stroke-width="4" vector-effect="non-scaling-stroke"/><rect x="12" y="84" width="76" height="8" rx="3" style="fill:var(--muted);opacity:.6"/>'),
   window:SV('<rect x="2" y="10" width="96" height="80" rx="3" style="fill:rgba(120,170,210,.3);stroke:var(--muted)" '+ST+'/><path d="M50 10V90M2 50H98" style="stroke:var(--muted)" '+ST+'/>')};
 function newItem(t){const d=DEF[t],c=C(),n=c.seat.filter(i=>i.t===t).length;const it={id:'i'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),t,w:d[0],h:d[1],text:d[2],pin:false,x:30,y:45};if(t==='desk'){it.x=5+(n%7)*13;it.y=22+Math.floor(n/7)*11}if(t==='label')it.y=3;if(t==='door')it.x=92;if(t==='board'){it.x=35;it.y=1}if(t==='window'){it.x=0;it.y=30}if(t!=='desk'){const k=c.seat.filter(i=>i.t!=='desk').length%6;it.x=Math.max(0,Math.min(it.x+k*3,100-it.w));it.y+=k*7}it.y=Math.min(it.y,100-it.h);c.seat.push(it);return it}
-function rSeat(){ens(C());rLay();rPane();const r=$('room'),fa=document.activeElement,fcl=fa&&r.contains(fa)?fa.closest('.it'):null,fid=fcl?fcl.dataset.id:null;r.innerHTML='';const L=!!C().lock;['sRows','sCols','sGrid','sAdd','sBig','sSmall','sDel'].forEach(id=>$(id).disabled=L);$('sLock').textContent=L?'Unlock layout':'Lock layout';document.documentElement.dataset.lock=L?'1':'0';r.classList.toggle('nopins',!$('sPins').checked);C().seat.forEach(it=>{const e=document.createElement('div');e.className='it '+it.t+(isSel(it.id)?' sel':'')+(it.pin?' pin':'');e.dataset.id=it.id;e.style.cssText='left:'+it.x+'%;top:'+it.y+'%;width:'+it.w+'%;height:'+it.h+'%';if(it.t==='desk'&&it.text){const p=PH()[it.text];if(p){const im=document.createElement('img');im.src=p;e.appendChild(im)}const s=document.createElement('span');s.textContent=it.text;e.appendChild(s);const xb=document.createElement('b');xb.className='x';xb.textContent='×';xb.title='Remove from this seat';xb.tabIndex=0;xb.setAttribute('role','button');xb.setAttribute('aria-label','Remove '+it.text+' from this seat');xb.onclick=ev=>{ev.stopPropagation();pushU();it.text='';it.pin=false;$('sNote').textContent='';save();rSeat()};e.appendChild(xb);const q=(R()[it.text]||[]).find(x=>x.date===today());{const d=document.createElement('i');d.className='dot '+(q?q.attendance:'present');d.textContent={present:'✓',late:'L',absent:'A'}[q?q.attendance:'present'];d.title={present:'Present',late:'Late',absent:'Absent'}[q?q.attendance:'present'];e.appendChild(d)}if(q&&q.phone){const f=document.createElement('i');f.className='phn';f.innerHTML=PHSV[q.phone];f.style.color=PHC[q.phone];f.title='Phone: '+{g:'away',y:'reminder',r:'in use'}[q.phone];e.appendChild(f)}if(q&&q.participation!=null){const f=document.createElement('i');f.className='pbar';f.style.width=q.participation/5*100+'%';f.style.background=PC[q.participation];e.appendChild(f);const nn=document.createElement('i');nn.className='pnum';nn.textContent=q.participation+'/5';e.appendChild(nn)}const hs=hwSum(q);if(hs){const hb=document.createElement('i');hb.className='hw '+hs.cls;hb.textContent='HW '+hs.txt;hb.title='Homework: '+hs.t;e.appendChild(hb)}}else if(GFX[it.t]){e.className+=' gfx';e.innerHTML=GFX[it.t];const s=document.createElement('span');s.className='cap';s.textContent=it.text;e.appendChild(s)}else e.textContent=it.text;if(it.t==='desk'){e.tabIndex=0;e.setAttribute('role','group');e.setAttribute('aria-label',deskLabel(it))}r.appendChild(e)});if(fid){const n=r.querySelector('[data-id="'+fid+'"]');if(n)n.focus()}applyNs();syncName();;if(!C().seat.length){const m=document.createElement('div');m.className='emp';const n=nm(C()).length;m.innerHTML='<b>'+(n?'Next: build your room':'Set up this class')+'</b><ol>'+(n?'':'<li>Add your class list</li>')+'<li>In Arrange room, enter Rows and Columns and click Create desk grid</li><li>In Assign seats, click A–Z or Random</li></ol>';if(!n){const b=document.createElement('button');b.className='primary';b.textContent='Add class list';b.onclick=openCL;m.appendChild(b)}if(n&&smode!=='arr'){const b2=document.createElement('button');b2.className='primary';b2.textContent='Arrange room';b2.onclick=()=>{setMode('arr')};m.appendChild(b2)}r.appendChild(m)}}
+function rSeat(){ens(C());rLay();rPane();const r=$('room'),fa=document.activeElement,fcl=fa&&r.contains(fa)?fa.closest('.it'):null,fid=fcl?fcl.dataset.id:null;r.innerHTML='';const L=!!C().lock;['sRows','sCols','sGrid','sAdd','sBig','sSmall','sDel'].forEach(id=>$(id).disabled=L);$('sLock').textContent=L?'Unlock layout':'Lock layout';document.documentElement.dataset.lock=L?'1':'0';r.classList.toggle('nopins',!$('sPins').checked);C().seat.forEach(it=>{const e=document.createElement('div');e.className='it '+it.t+(isSel(it.id)?' sel':'')+(it.pin?' pin':'');e.dataset.id=it.id;e.style.cssText='left:'+it.x+'%;top:'+it.y+'%;width:'+it.w+'%;height:'+it.h+'%';if(it.t==='desk'&&it.text){const p=PH()[it.text];if(p){const im=document.createElement('img');im.src=p;e.appendChild(im)}const s=document.createElement('span');s.textContent=it.text;e.appendChild(s);const xb=document.createElement('b');xb.className='x';xb.textContent='×';xb.title='Remove from this seat';xb.tabIndex=0;xb.setAttribute('role','button');xb.setAttribute('aria-label','Remove '+it.text+' from this seat');xb.onclick=ev=>{ev.stopPropagation();pushU();it.text='';it.pin=false;$('sNote').textContent='';save();rSeat()};e.appendChild(xb);const q=(R()[it.text]||[]).find(x=>x.date===today());{const d=document.createElement('i');d.className='dot '+(q?q.attendance:'present');d.textContent={present:'✓',late:'L',absent:'A'}[q?q.attendance:'present'];d.title={present:'Present',late:'Late',absent:'Absent'}[q?q.attendance:'present'];e.appendChild(d)}if(q&&q.phone){const f=document.createElement('i');f.className='phn';f.innerHTML=PHSV[q.phone];f.style.color=PHC[q.phone];f.title='Phone: '+{g:'away',y:'reminder',r:'in use'}[q.phone];e.appendChild(f)}if(q&&q.participation!=null){const f=document.createElement('i');f.className='pbar';f.style.width=q.participation/5*100+'%';f.style.background=PC[q.participation];e.appendChild(f);const nn=document.createElement('i');nn.className='pnum';nn.textContent=q.participation+'/5';e.appendChild(nn)}const hs=hwSum(q);if(hs){const hb=document.createElement('i');hb.className='hw '+hs.cls;hb.textContent='HW '+hs.txt;hb.title='Homework: '+hs.t;e.appendChild(hb)}}else if(GFX[it.t]){e.className+=' gfx';e.innerHTML=GFX[it.t];const s=document.createElement('span');s.className='cap';s.textContent=it.text;e.appendChild(s)}else e.textContent=it.text;if(it.t==='desk'){e.tabIndex=0;e.setAttribute('role','group');e.setAttribute('aria-label',deskLabel(it))}r.appendChild(e)});if(fid){const n=r.querySelector('[data-id="'+fid+'"]');if(n)n.focus()}applyNs();syncName();if(isPhone()&&document.documentElement.dataset.pv==='list')rList();;if(!C().seat.length){const m=document.createElement('div');m.className='emp';const n=nm(C()).length;m.innerHTML='<b>'+(n?'Next: build your room':'Set up this class')+'</b><ol>'+(n?'':'<li>Add your class list</li>')+'<li>In Arrange room, enter Rows and Columns and click Create desk grid</li><li>In Assign seats, click A–Z or Random</li></ol>';if(!n){const b=document.createElement('button');b.className='primary';b.textContent='Add class list';b.onclick=openCL;m.appendChild(b)}if(n&&smode!=='arr'){const b2=document.createElement('button');b2.className='primary';b2.textContent='Arrange room';b2.onclick=()=>{setMode('arr')};m.appendChild(b2)}r.appendChild(m)}}
 let dg=null;const room=$('room');
 room.onpointerdown=e=>{if(e.target.closest('.x'))return;const el=e.target.closest('.it');if(!el&&smode==='arr'&&(e.target===room||e.target.closest('.emp'))){startBand(e);return}if(!el||e.target.isContentEditable||el.isContentEditable)return;const it=find(el.dataset.id);
 if(smode==='arr'&&(e.shiftKey||e.ctrlKey||e.metaKey)){if(!selx.size&&sel)selx.add(sel);if(selx.has(it.id))selx.delete(it.id);else selx.add(it.id);sel=selx.size?it.id:null;paintSel();syncName();return}
@@ -733,7 +776,7 @@ function setMode(m){smode=m;document.documentElement.dataset.smode=m;document.qu
 document.querySelectorAll('#smodes button').forEach(b=>b.onclick=()=>{modeSet=1;setMode(b.dataset.m)});
 function quick(it){const n=it.text,a=recs(n),t=today(),r=a.find(x=>x.date===t),nx={present:'late',late:'absent',absent:'present'}[r?r.attendance:'present'];if(r)r.attendance=nx;else a.push({date:t,attendance:nx,participation:null,phone:null,notes:''});if(nx==='present'&&r&&r.participation==null&&!r.phone&&!r.notes)a.splice(a.indexOf(r),1);save();rSeat();toast(n+': '+CAP(nx))}
 function openPop(it){openM(it);$('mod').classList.add('pop');placePop()}
-function placePop(){const m=$('mod'),b=$('mbox');if(m.hidden||!m.classList.contains('pop')||!mcur)return;const el=room.querySelector('[data-id="'+mcur.id+'"]');b.style.left='0px';b.style.top='0px';if(!el)return;const r=el.getBoundingClientRect(),w=b.offsetWidth,h=b.offsetHeight;let x=r.right+8;if(x+w>innerWidth-8)x=r.left-w-8;if(x<8)x=Math.max(8,Math.min(r.left,innerWidth-w-8));b.style.left=x+'px';b.style.top=Math.max(8,Math.min(r.top,innerHeight-h-8))+'px'}
+function placePop(){const m=$('mod'),b=$('mbox');if(m.hidden||!m.classList.contains('pop')||!mcur)return;if(isPhone()){b.style.left='';b.style.top='';return}const el=room.querySelector('[data-id="'+mcur.id+'"]');b.style.left='0px';b.style.top='0px';if(!el)return;const r=el.getBoundingClientRect(),w=b.offsetWidth,h=b.offsetHeight;let x=r.right+8;if(x+w>innerWidth-8)x=r.left-w-8;if(x<8)x=Math.max(8,Math.min(r.left,innerWidth-w-8));b.style.left=x+'px';b.style.top=Math.max(8,Math.min(r.top,innerHeight-h-8))+'px'}
 $('mhist').onclick=()=>{$('mod').classList.remove('pop');$('mbox').style.left=$('mbox').style.top=''};
 document.addEventListener('pointerdown',e=>{const m=$('mod');if(!m.hidden&&m.classList.contains('pop')&&!e.target.closest('#mbox'))$('msave').click()},true);
 function byGroup(n){const g=(C().groups||[]).flat().filter(x=>n.includes(x));return g.concat(n.filter(x=>!g.includes(x)))}
@@ -806,12 +849,41 @@ $('sSpread').onclick=()=>spread(1.1);$('sTight').onclick=()=>spread(1/1.1);
 /* Share room layouts between classes (copies; seats start empty) */
 const cname=(k,i)=>k.name||'Class '+(i+1);
 function cloneLayout(l,name){return{name,seat:JSON.parse(JSON.stringify(l.seat)).map(i=>({...i,text:i.t==='desk'?'':i.text,pin:false})),lock:false}}
-function rShare(){const s=$('sShare'),others=D.classes.map((k,i)=>[k,i]).filter(([k,i])=>i!==D.cur);s.innerHTML='';s.appendChild(new Option('Share layout…',''));
+function rShare(){const s=$('sShare'),others=D.classes.map((k,i)=>[k,i]).filter(([k,i])=>i!==D.cur);s.innerHTML='';s.appendChild(new Option('Share…',''));
   const g1=document.createElement('optgroup');g1.label='Copy this layout to';others.forEach(([k,i])=>g1.appendChild(new Option(cname(k,i),'to:'+i)));if(others.length>1)g1.appendChild(new Option('All other classes','to:all'));s.appendChild(g1);
   const g2=document.createElement('optgroup');g2.label='Use a layout from';others.forEach(([k,i])=>{ens(k);k.layouts.forEach((l,j)=>{if(l.seat.length)g2.appendChild(new Option(cname(k,i)+': '+(l.name||'Untitled'),'from:'+i+':'+j))})});if(g2.children.length)s.appendChild(g2)}
 $('sShare').onchange=e=>{const v=e.target.value;e.target.value='';if(!v)return;const c=C();save();
   if(v.startsWith('to:')){const cur=c.layouts[c.lay],t=v.slice(3),ts=t==='all'?D.classes.map((k,i)=>i).filter(i=>i!==D.cur):[+t];ts.forEach(i=>{const k=D.classes[i];ens(k);k.layouts.push(cloneLayout(cur,(cur.name||'Layout')+' (from '+cname(c,D.cur)+')'))});save();rShare();toast('Layout copied to '+(t==='all'?'all other classes':cname(D.classes[+t],+t))+'. Seats start empty.',3500)}
   else{const[,i,j]=v.split(':'),k=D.classes[+i],l=k.layouts[+j];pushU();c.layouts.push(cloneLayout(l,(l.name||'Layout')+' (from '+cname(k,+i)+')'));useL(c,c.layouts.length-1);save();rSeat();toast('Layout copied from '+cname(k,+i)+'. Seats start empty.',3500)}};
+/* Phone view: seating plan + full-screen tracking sheet */
+const PHQ=matchMedia('(max-width:700px), (max-height:500px) and (pointer:coarse)');
+const isPhone=()=>document.documentElement.dataset.phone==='1';
+function setPhone(){const on=PHQ.matches||new URLSearchParams(location.search).get('phone')==='1';document.documentElement.dataset.phone=on?'1':'0';if(on)document.documentElement.dataset.pv=store.get('pv','plan');if(view==='seating'&&on)setMode('trk')}
+PHQ.addEventListener('change',setPhone);
+document.querySelectorAll('#pv button').forEach(b=>b.onclick=()=>{document.documentElement.dataset.pv=b.dataset.p;store.set('pv',b.dataset.p);document.querySelectorAll('#pv button').forEach(x=>x.classList.toggle('on',x===b));rSeat()});
+function rList(){const box=$('plist2');box.innerHTML='';const ds=C().seat.filter(i=>i.t==='desk'&&i.text),od=ds.length?order(ds,'tl','row'):[];
+  if(!od.length){const m=document.createElement('div');m.className='hint';m.textContent='No seated students yet. Assign seats on a computer first, then Save and Load the file here.';box.appendChild(m);return}
+  od.forEach(it=>{const q=(R()[it.text]||[]).find(x=>x.date===today()),st=q?q.attendance:'present',b=document.createElement('button');b.className='lrow';b.setAttribute('role','listitem');b.setAttribute('aria-label',deskLabel(it));
+    const n=document.createElement('span');n.className='ln';n.textContent=it.text;b.appendChild(n);
+    const m=document.createElement('span');m.className='lm';
+    const d=document.createElement('i');d.className='dot '+st;d.textContent={present:'✓',late:'L',absent:'A'}[st];m.appendChild(d);
+    if(q&&q.participation!=null){const p=document.createElement('i');p.className='lp';p.textContent=q.participation+'/5';p.style.background=PC[q.participation];if(q.participation>=2&&q.participation<=4)p.style.color='#1a1a1a';m.appendChild(p)}
+    const hs=hwSum(q);if(hs){const h=document.createElement('i');h.className='hw '+hs.cls;h.textContent='HW '+hs.txt;m.appendChild(h)}
+    if(q&&q.phone){const f=document.createElement('i');f.className='phn';f.innerHTML=PHSV[q.phone];f.style.color=PHC[q.phone];m.appendChild(f)}
+    b.appendChild(m);b.onclick=()=>openPop(it);box.appendChild(b)})}
+/* Android back button closes the sheet instead of leaving the page */
+let sheetH=0;
+const openPop0=openPop;
+openPop=function(it){openPop0(it);if(isPhone()&&!sheetH){try{history.pushState({sheet:1},'');sheetH=1}catch(e){}}};
+addEventListener('popstate',()=>{if(sheetH){sheetH=0;if(!$('mod').hidden)$('msave').click()}});
+const msave0=$('msave').onclick;
+$('msave').onclick=()=>{msave0();if(sheetH){sheetH=0;try{history.back()}catch(e){}}};
+$('mclose').onclick=()=>$('msave').click();
+$('mx').onclick=()=>$('msave').click();
+$('mnext2').onclick=()=>{const ds=C().seat.filter(i=>i.t==='desk'&&i.text),od=ds.length?order(ds,'tl','row'):[],k=od.indexOf(mcur);if(k<0||k>=od.length-1){toast('That was the last student.');$('msave').click();return}flush();doRename();rSeat();openM(od[k+1]);$('mbox').scrollTop=0}
+room.addEventListener('pointercancel',()=>{dg=null;if(band)endBand()});
+setPhone();
+document.querySelectorAll('#pv button').forEach(x=>x.classList.toggle('on',x.dataset.p===document.documentElement.dataset.pv));
 tabs();loadG();setView('screen');
 
 /* Theme, controls, fullscreen */
